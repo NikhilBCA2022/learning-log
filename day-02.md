@@ -8,66 +8,7 @@ The goal of this lab was to map and validate inbound/outbound communication flow
 
 ## 🏗️ Architecture Diagram
 
-```mermaid
-flowchart TB
-    Internet((Internet))
-
-    subgraph AWS["AWS Cloud - Region: ap-south-1 (Mumbai)"]
-        subgraph VPC["VPC: day2-vpc | 10.0.0.0/16"]
-            
-            IGW["Internet Gateway\n(day2-igw)"]
-            
-            subgraph PUBLIC["Public Subnet | 10.0.1.0/24"]
-                PUBRT["Public Route Table\n[0.0.0.0/0 ➔ IGW]"]
-                NAT["NAT Gateway\n(day2-nat-gateway)\n[Elastic IP]"]
-                PUBEC2["Public EC2 (Ubuntu 24.04)\nIP: 10.0.1.74\n[Public IPv4 Enabled]"]
-                EICE["EC2 Instance Connect Endpoint\n(day2-eic-endpoint)"]
-            end
-
-            subgraph PRIVATE["Private Subnet | 10.0.0.0/24"]
-                PRIVRT["Private Route Table\n[0.0.0.0/0 ➔ NAT Gateway]"]
-                PRIVEC2["Private EC2 (Ubuntu 24.04)\nIP: 10.0.0.176\n[No Public IPv4]"]
-            end
-
-            PUBSG["Public Security Group\n[Inbound: SSH from My IP]"]
-            PRIVSG["Private Security Group\n[Inbound: SSH from Public SG / EICE]"]
-
-        end
-    end
-
-    %% Routing Infrastructure
-    Internet <-->|Public Traffic Flow| IGW
-    IGW <--> PUBRT
-    PUBRT <--> PUBEC2
-    
-    %% Private Subnet Outbound Path via NAT
-    PRIVEC2 --> PRIVRT
-    PRIVRT --> NAT
-    NAT --> PUBRT
-    
-    %% Management Streams
-    PUBEC2 -->|"Internal Bastion SSH\n(TCP 22)"| PRIVEC2
-    EICE -->|"AWS Endpoint SSH\n(TCP 22)"| PRIVEC2
-
-    %% Firewall Group Attachments
-    PUBSG -.->|Controls| PUBEC2
-    PRIVSG -.->|Controls| PRIVEC2
-
-    %% Design Styles
-    classDef internet fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0369a1
-    classDef vpc fill:#f8fafc,stroke:#475569,stroke-width:2px,stroke-dasharray: 5 5,color:#1e293b
-    classDef public fill:#f0fdf4,stroke:#16a34a,stroke-width:2px,color:#14532d
-    classDef private fill:#fffbeb,stroke:#d97706,stroke-width:2px,color:#78350f
-    classDef component fill:#ede9fe,stroke:#7c3aed,stroke-width:1px,color:#4c1d95
-    classDef security fill:#fee2e2,stroke:#dc2626,stroke-width:1px,color:#7f1d1d
-
-    class Internet internet
-    class VPC vpc
-    class PUBLIC public
-    class PRIVATE private
-    class IGW,NAT,PUBEC2,PRIVEC2,EICE,PUBRT,PRIVRT component
-    class PUBSG,PRIVSG security
-```
+<img width="1536" height="1024" alt="AWS VPC Networking Architecture Diagram" src="https://github.com/user-attachments/assets/9fc0ed14-f935-4058-b950-2c6dd3ba6a74" />
 
 ---
 
